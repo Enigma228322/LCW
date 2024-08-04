@@ -1,21 +1,33 @@
+#include <iostream>
+#include <filesystem>
+
 #include "WordsCountService/WordsCountServiceImpl.hh"
 
 namespace wordscount {
 
-WordsCountServiceImpl::WordsCountServiceImpl(const char* in_filename, const char* out_filename): in(std::ifstream(in_filename)), out(std::ofstream(out_filename)) {
+WordsCountServiceImpl::WordsCountServiceImpl(const char* in_filename, const char* out_filename):
+in(std::ifstream(in_filename)), out(std::ofstream(out_filename)) {
     words_map.reserve(MAX_UNIQUE_WORDS);
 };
 
-void WordsCountServiceImpl::count_words() {
-    while (!in.eof()) {
-        std::string s;
-        in >> s;
-        std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) {
-            return std::tolower(c);
-        });
-        ++words_map[s];
+int WordsCountServiceImpl::count_words() {
+    if (!in) {
+        std::cerr << "Error: Unable to open input file.\n";
+        return 1;
     }
+    buffer.assign((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
     in.close();
+    uint32_t word_len = 0;
+    for (auto it = buffer.begin(); it != buffer.end(); ++it) {
+        *it = std::tolower(*it);
+        if (*it != ' ') ++word_len;
+        else {
+            ++words_map[std::string(it - word_len, it)];
+            word_len = 0;
+        }
+    }
+    ++words_map[std::string(buffer.end() - word_len, buffer.end())];
+    return 0;
 }
 
 void WordsCountServiceImpl::write_result() {

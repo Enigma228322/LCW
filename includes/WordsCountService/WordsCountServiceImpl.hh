@@ -1,3 +1,7 @@
+#include <fstream>
+#include <string>
+#include <unordered_map>
+
 #include "WordsCountService/WordsCountService.hh"
 
 namespace wordscount {
@@ -9,7 +13,7 @@ const int MAX_UNIQUE_WORDS = 1e3;
 public:
     WordsCountServiceImpl(const char* in_filename, const char* out_filename);
 
-    void count_words() override;
+    int count_words() override;
 
     void write_result() override;
 
@@ -19,6 +23,7 @@ private:
     std::ifstream in;
     std::ofstream out;
     std::unordered_map<std::string, uint32_t> words_map;
+    std::string buffer;
 };
 
 } // namespace wordscount;
